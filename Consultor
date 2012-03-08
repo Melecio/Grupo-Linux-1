@@ -1,0 +1,75 @@
+#! /bin/bash
+# Script de consulta del estado de maquinas
+
+function obtener_salas
+{
+    local _S="$1[*]"
+    _S=(${!_S})
+
+    if [ ${_S:-1} -eq 1 ] 2>>/dev/null ; then
+	s[0]="a"
+	s[1]="e"
+	s[2]="f"
+	s[3]="et"
+    else
+	for i in {0..3}; do
+	    aux=$(echo $_S | cut -d":" -f$(($i+1)))
+	    if [ ${aux:-1} = 1 ] ; then 
+		return 1
+	    else
+		s[$i]=$aux
+	    fi
+	done
+    fi
+}
+
+function obtener_rangos
+{
+    local rango_="$1[*]"
+    rango_=(${!rango_})
+    if [ $rango_ ] ; then	
+	for i in {0..3}; do
+	    r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
+	    if [ ${r:-1} = 1 ] ; then 
+		return 1
+	    fi
+	    start[$i]=$(echo $r | cut -d":" -f1)	
+	    end[$i]=$(echo $r | cut -d":" -f2)
+	done
+    else	 
+	start=1
+	end=24
+    fi
+}
+
+dir=~/DaemonLOG
+declare -a s
+declare -a start
+declare -a end
+
+while getopts ":s:r:" opcion
+do
+    case $opcion in
+        s ) salas="$OPTARG" ;;
+        r ) rangos="$OPTARG" ;;
+ 	\?) echo "[-s a:e:f:et] [-r inicio:final/inicial1:final1/inicial2:final2/inicial3:final3] " ; exit ;;
+    esac
+done
+shift $(($OPTIND -1))
+
+obtener_salas "salas"
+declare -p s
+
+obtener_rangos "rangos"
+declare -p start
+declare -p end
+
+declare -i fk=0
+for sala in ${s[*]}
+do    
+    for i in $(seq ${start[$fk]} ${end[$fk]}) 
+    do
+	grep "$sala$i " $dir | tail -1 
+    done				     			
+    fk=$fk+1
+done					     

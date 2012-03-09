@@ -12,6 +12,10 @@ function obtener_salas
 	s[2]="f"
 	s[3]="et"
     else
+	if [ ${#_S} -eq 1 ] || [ ${#_S} -eq 2 ] ; then
+	    s=($_S)
+	    return 1
+	fi
 	for i in {0..3}; do
 	    aux=$(echo $_S | cut -d":" -f$(($i+1)))
 	    if [ ${aux:-1} = 1 ] ; then 
@@ -42,6 +46,28 @@ function obtener_rangos
     fi
 }
 
+function validar_rangos
+{
+    local min="$1"
+    min=(${!min})
+
+    local max="$2"
+    max=(${!max})
+
+    if [ $min -lt 1 ] || [ $max -gt 24 ] ; then
+	echo Verifique que los rangos introducidos sean validos
+	exit 1
+    fi
+
+    if [ $min -gt $max ] ; then
+	temp=$min
+	min=$max
+	max=$temp
+    fi
+    tmp=($min $max)
+    return $tmp
+}
+
 dir=~/DaemonLOG
 declare -a s
 declare -a start
@@ -61,15 +87,36 @@ obtener_salas "salas"
 declare -p s
 
 obtener_rangos "rangos"
+
+old_long_start=${#start[@]}
+
+if [ ${#s[@]} -gt ${#start[@]} ] ;  then
+    for j in $(seq ${#start[@]} $((${#s[@]}-1))) ;  do
+	start[$j]=1
+	end[$j]=24
+    done
+elif [ ${#s[@]} -lt ${#start[@]} ] ; then
+    echo Numero de salas menor que numero de rangos
+    exit 1
+fi
+
+for i in $(seq 0 $(($old_long_start-1))) ; do
+    validar_rangos "start[$i]" "end[$i]"
+    tmp=$?
+    start[$i]=${tmp[0]}
+    end[$i]=${tmp[1]}
+done
+    
 declare -p start
 declare -p end
 
-declare -i fk=0
-for sala in ${s[*]}
-do    
-    for i in $(seq ${start[$fk]} ${end[$fk]}) 
-    do
-	grep "$sala$i " $dir | tail -1 
-    done				     			
-    fk=$fk+1
-done					     
+
+#declare -i fk=0
+#for sala in ${s[*]}
+#do    
+#    for i in $(seq ${start[$fk]} ${end[$fk]}) 
+#    do
+#	grep "$sala$i " $dir | tail -1 
+#    done				     			
+#    fk=$fk+1
+#ddone					     

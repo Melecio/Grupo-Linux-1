@@ -1,11 +1,11 @@
 #!/bin/bash
 
-tam=${#1}
-declare -i i=1 # Variable que se usara como contador
+#declare -i i=1 # Variable que se usara como contador
+declare -i inic=1
 dirssh="./ssh"
 
 if [ "$1" = "et" ] ; then
-	fin=21
+	fin=20
 else
 	fin=24
 fi
@@ -28,30 +28,24 @@ fi
 # 	else
 # 		echo "$1$j no puede ser accedida"
 # 	fi
-# done
+# done 
 
-if [ $tam -eq 1 ] ; then
-	case $1 in
+case $1 in
 	a | e | f | et)
-		until [ $i -eq 24 ] ; do
-		if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
-			for j in $(seq 1 $fin) ; do
-				ssh-copy-id -i ~/.ssh/id_rsa.pub root@$1$j.ac.labf.usb.ve
-				# Lo mismo ocurre aqui, habria que introducir la clave de
-				# root mil veces
-			done
-			i=$i+1
-		else
-			echo "$1$j no puede ser accedida"
-		fi
-		done
-		;;
-	*) echo "Salas validas: a, e, f, et" && exit ;;
-	esac
-else
-	echo "Introduzca nombre de sala"
-	exit
-fi
+		for i in $(seq 1 $fin) ; do
+			if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
+				ssh root@$1$i.ac.labf.usb.ve 'for j in $(seq 1 $fin) ; do ssh-copy-id -i ~/.ssh/id_rsa.pub root@'"$1"'$j.ac.labf.usb.ve ; done; exit'
+			else
+				echo "$1$i no puede ser accedida"
+			fi
+		done;;
+	*) echo "Salas validas: a, e, f, et" ;;
+esac
+
+
+
+
+
 
 
 

@@ -1,0 +1,65 @@
+#! /bin/bash
+# script tipo -vVh -s[sala] -r[12:20] 
+
+LOG=./DaemonLOG  
+date=$(date +"%r  %d/%b/%Y") ### formato de la fecha ### PD: es dificil elegir uno son demasiados! 
+
+### da valor a las variables ### PD: se ejecuta cada vez que se reinicie el demonio, no se me ha ocurrido nada mejor :s
+for sala in a e f et	
+do
+    if [ $sala = et ] ; then ### cambia el rango a 21 en sala et ###
+	final=21
+    else
+	final=24
+    fi
+    for i in $(seq 1 $final) ### itero a la variable final por el cambio de et ###
+    do
+	eval $sala[$i]=1 ### comienza diciendo que todas esta apagadas ### PD: como un exit status 0=prendida 1=apagada
+    done
+done
+
+### crea el archivo ### PD: solo lo hara la primera vez o si se cambia el log
+if [ -a $LOG ] ; then   
+	true
+else
+    for sala in a e f et
+    do
+	if [ $sala = et ] ; then ### de nuevo el rango para et ### PD: hay una mejor forma de hacerlo??
+	    final=21
+	else
+	    final=24
+	fi    
+        for i in $(seq 1 $final)
+        do
+	    echo "$sala$i is (off) $date" >> $LOG
+        done
+    done
+    chmod 444 $LOG ### da permiso de solo lectura ###
+fi
+
+while true ### la magia de que sea infinito, o casi ###
+do 
+     for sala in a e f et 
+     do
+	 if [ $sala = et ] ; then ### ...
+	     final=21
+	 else
+	     final=24
+	 fi 
+	 for i in $(seq 1 $final)
+	 do
+	     boolean=$(eval echo \${$sala[$i]}) 
+	     if ping -c 1 $sala$i.ac.labf.usb.ve 2>>/dev/null >>/dev/null ; then ### si hace ping y la variable dice que esta apagada ###   
+		 if [ ${boolean} -eq 1 ] ; then					 ### imprime en nuestro log o viceversa en caso de    ###             
+		     eval $sala[$i]=0						 ### que sean iguales nada pasa! mas lindo! :)        ###                         ###
+		     echo "$sala$i is (on) $date" >> $LOG
+		 fi
+	     else
+		 if [ ${boolean} -eq 0 ] ; then
+                     eval $sala[$i]=1 
+                     echo "$sala$i is (off) $date" >> $LOG
+		 fi
+	     fi
+	 done
+     done
+done

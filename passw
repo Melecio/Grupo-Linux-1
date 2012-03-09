@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#declare -i i=1 # Variable que se usara como contador
 declare -i inic=1
 dirssh="./ssh"
 
@@ -10,36 +9,44 @@ else
 	fin=24
 fi
 
+#for i in {1..20} ; do
+#	ssh root@$1$i.ac.labf.usb.ve '
+#	for j in {1..20} ; do
+#	ssh-keygen -R '"$1"'$j
+#	done ; exit '
+#done
+
 # No se si se debe comprobar que todas las maquinas tienen su respectivo
 # public key generado, y de no tenerlo, generar uno. No se como hacer
 # esto que digo bonito, porque si el passwordless es para root, habria que
 # revisar en /root que existe el directorio .ssh/, y para eso necesitamos
 # permisos de superusuario
 
-# for j in $(seq 1 $fin) ; do
-# 	if ping -c 1 $1$j.ac.labf.usb.ve > /dev/null ; then
-# 		su # Aqui se tendria que introducir la contraseña mil veces
-# 		if [ $dirssh -a ] ; then
-# 			chmod 700 ./ssh # Hay que darle permisos
-# 		echo "$1$j lo tiene"
+#for j in $(seq 1 $fin) ; do
+ #	if ping -c 1 $1$j.ac.labf.usb.ve > /dev/null ; then
+#		ssh root@$1$j.ac.labf.usb.ve '
+#		echo $PWD
+#		if [ $dirssh -a ] ; then
+ #			chmod 700 .ssh/
+#			echo '"$1$j"' lo tiene
 #		else
-# 		ssh-keygen -t rsa
-# 		fi
-# 	else
-# 		echo "$1$j no puede ser accedida"
-# 	fi
-# done 
+#			ssh-keygen -t rsa
+ #		fi ; exit '
+ #	else
+#		echo "$1$j no puede ser accedida"
+#	fi
+#done 
 
 case $1 in
-	a | e | f | et)
-		for i in $(seq 1 $fin) ; do
-			if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
-				ssh root@$1$i.ac.labf.usb.ve 'for j in $(seq 1 $fin) ; do ssh-copy-id -i ~/.ssh/id_rsa.pub root@'"$1"'$j.ac.labf.usb.ve ; done; exit'
-			else
-				echo "$1$i no puede ser accedida"
-			fi
-		done;;
-	*) echo "Salas validas: a, e, f, et" ;;
+    a | e | f | et)
+	for i in $(seq 1 $fin) ; do
+	    if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
+		ssh root@$1$i.ac.labf.usb.ve 'for j in $(seq 1 $fin) ; do ssh-copy-id -i ~/.ssh/id_rsa.pub root@'"$1"'$j.ac.labf.usb.ve ; done; exit'
+	    else
+		echo "$1$i no puede ser accedida"
+	    fi
+	done;;
+    *) echo "Salas validas: a, e, f, et" ;;=======
 esac
 
 

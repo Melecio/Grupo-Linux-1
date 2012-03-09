@@ -130,15 +130,14 @@ declare -i fk=0
 # Itera por todas las computadoras desaeadas,
 # llevando primero el script con scp, dandole permiso
 # se corre y luego se borra para no dejar rastro
+file=${1##/*/}
 for sala in ${s[*]}
 do    
     for i in $(seq ${start[$fk]} ${end[$fk]}) 
     do
 	if ping -c 1 $sala$i.ac.labf.usb.ve 2>>/dev/null >>/dev/null ; then 
-	    
 	    scp $1 root@$sala$i.ac.labf.usb.ve:./
-	    ssh root@$sala$i.ac.labf.usb.ve "chmod +x /root/$1 ; /root/$1 ; rm -rf /root/$1 ; exit" 
-	    
+	    ssh root@$sala$i.ac.labf.usb.ve "chmod +x /root/$file ; /root/$file ; rm -rf /root/$file ; exit" 
 	else
 	    echo "$sala$i esta apagada"
 	fi

@@ -9,12 +9,12 @@ else
 	fin=24
 fi
 
-for i in {1..20} ; do
-	ssh root@$1$i.ac.labf.usb.ve '
-	for j in {1..20} ; do
-		ssh-keygen -R '"$1"'$j
-	done ; exit '
-done
+#for i in {1..20} ; do
+#	ssh root@$1$i.ac.labf.usb.ve '
+#	for j in {1..20} ; do
+#	ssh-keygen -R '"$1"'$j
+#	done ; exit '
+#done
 
 # No se si se debe comprobar que todas las maquinas tienen su respectivo
 # public key generado, y de no tenerlo, generar uno. No se como hacer
@@ -46,7 +46,7 @@ case $1 in
 		echo "$1$i no puede ser accedida"
 	    fi
 	done;;
-    *) echo "Salas validas: a, e, f, et" ;;
+    *) echo "Salas validas: a, e, f, et" ;;=======
 esac
 
 

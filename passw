@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#declare -i i=1 # Variable que se usara como contador
 declare -i inic=1
 dirssh="./ssh"
 
@@ -16,19 +15,20 @@ fi
 # revisar en /root que existe el directorio .ssh/, y para eso necesitamos
 # permisos de superusuario
 
-# for j in $(seq 1 $fin) ; do
-# 	if ping -c 1 $1$j.ac.labf.usb.ve > /dev/null ; then
-# 		su # Aqui se tendria que introducir la contraseña mil veces
-# 		if [ $dirssh -a ] ; then
-# 			chmod 700 ./ssh # Hay que darle permisos
-# 		echo "$1$j lo tiene"
+#for j in $(seq 1 $fin) ; do
+ #	if ping -c 1 $1$j.ac.labf.usb.ve > /dev/null ; then
+#		ssh root@$1$j.ac.labf.usb.ve '
+#		echo $PWD
+#		if [ $dirssh -a ] ; then
+ #			chmod 700 .ssh/
+#			echo '"$1$j"' lo tiene
 #		else
-# 		ssh-keygen -t rsa
-# 		fi
-# 	else
-# 		echo "$1$j no puede ser accedida"
-# 	fi
-# done 
+#			ssh-keygen -t rsa
+ #		fi ; exit '
+ #	else
+#		echo "$1$j no puede ser accedida"
+#	fi
+#done 
 
 case $1 in
 	a | e | f | et)

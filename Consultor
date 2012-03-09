@@ -34,8 +34,6 @@ function obtener_rangos
     if [ ${#rango_} -le 5 ] ; then
 	start=(${rango_//:*})
 	end=(${rango_#*:})
-	declare -p start
-	declare -p end
 	return 1
     fi
     if [ $rango_ ] ; then	
@@ -77,6 +75,19 @@ function validar_rangos
     return $tmp
 }
 
+function validar_salas
+{
+    local _S="$1[*]"
+    _S=(${!_S})
+
+    for s in ${_S[*]} ; do
+	if [ $s != e ] && [ $s != a ] && [ $s != et ] && [ $s != f ]; then
+	    echo Alguna sala invalida
+	    exit 1
+	fi
+    done
+}
+
 dir=~/DaemonLOG
 declare -a s
 declare -a start
@@ -93,7 +104,6 @@ done
 shift $(($OPTIND -1))
 
 obtener_salas "salas"
-declare -p s
 
 obtener_rangos "rangos"
 
@@ -113,6 +123,8 @@ for i in $(seq 0 $(($old_long_start-1))) ; do
     end[$i]=${tmp[1]}
 done
     
+validar_salas "s"
+declare -p s
 declare -p start
 declare -p end
 

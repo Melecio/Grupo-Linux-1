@@ -31,8 +31,15 @@ function obtener_rangos
 {
     local rango_="$1[*]"
     rango_=(${!rango_})
+    if [ ${#rango_} -le 5 ] ; then
+	start=(${rango_//:*})
+	end=(${rango_#*:})
+	declare -p start
+	declare -p end
+	return 1
+    fi
     if [ $rango_ ] ; then	
-	for i in {0..3}; do
+	for i in {0..3}; do	    echo
 	    r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
 	    if [ ${r:-1} = 1 ] ; then 
 		return 1
@@ -97,9 +104,6 @@ if [ ${#s[@]} -gt ${#start[@]} ] ;  then
 	start[$j]=1
 	end[$j]=24
     done
-elif [ ${#s[@]} -lt ${#start[@]} ] ; then
-    echo Numero de salas menor que numero de rangos
-    exit 1
 fi
 
 for i in $(seq 0 $(($old_long_start-1))) ; do

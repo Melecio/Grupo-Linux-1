@@ -64,7 +64,9 @@ function validar_rangos
 	min=$max
 	max=$temp
     fi
+
     tmp=($min $max)
+
     return $tmp
 }
 
@@ -109,7 +111,6 @@ done
     
 declare -p start
 declare -p end
-
 
 #declare -i fk=0
 #for sala in ${s[*]}

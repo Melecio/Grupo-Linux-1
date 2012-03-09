@@ -128,12 +128,16 @@ declare -p s
 declare -p start
 declare -p end
 
-#declare -i fk=0
-#for sala in ${s[*]}
-#do    
-#    for i in $(seq ${start[$fk]} ${end[$fk]}) 
-#    do
-#	grep "$sala$i " $dir | tail -1 
-#    done				     			
-#    fk=$fk+1
-#ddone					     
+declare -i fk=0
+for sala in ${s[*]}
+do    
+    for i in $(seq ${start[$fk]} ${end[$fk]}) 
+    do
+	boolean=$(eval echo \${$sala[$i]})
+	if [ $boolean -eq 1 ] ; then
+	    echo "$sala$i is (off)
+        else
+            echo "$sala$i is (on)"
+    done				     			
+    fk=$fk+1
+done					     

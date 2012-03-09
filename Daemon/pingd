@@ -46,7 +46,7 @@ do
 	     boolean=$(eval echo \${$sala[$i]}) 
 	     if ping -c 1 $sala$i.ac.labf.usb.ve 2>>/dev/null >>/dev/null ; then ### si hace ping y la variable dice que esta apagada ###   
 		 if [ ${boolean} -eq 1 ] ; then					 ### imprime en nuestro log o viceversa en caso de    ###             
-		     eval $sala[$i]=0						 ### que sean iguales nada pasa! mas lindo! :)        ###                         ###
+		     eval $sala[$i]=0						 ### que sean iguales nada pasa! mas lindo! :)        ###
 		     echo "$sala$i is (on) $date" >> $LOG
 		 fi
 	     else

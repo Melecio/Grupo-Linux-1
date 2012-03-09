@@ -9,6 +9,13 @@ else
 	fin=24
 fi
 
+for i in {1..20} ; do
+	ssh root@$1$i.ac.labf.usb.ve '
+	for j in {1..20} ; do
+		ssh-keygen -R '"$1"'$j
+	done ; exit '
+done
+
 # No se si se debe comprobar que todas las maquinas tienen su respectivo
 # public key generado, y de no tenerlo, generar uno. No se como hacer
 # esto que digo bonito, porque si el passwordless es para root, habria que

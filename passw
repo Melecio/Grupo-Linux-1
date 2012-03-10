@@ -46,7 +46,7 @@ case $1 in
 		echo "$1$i no puede ser accedida"
 	    fi
 	done;;
-    *) echo "Salas validas: a, e, f, et" ;;=======
+    *) echo "Salas validas: a, e, f, et" ;;
 esac
 
 

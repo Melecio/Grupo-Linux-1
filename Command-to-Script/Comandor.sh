@@ -12,7 +12,7 @@ done
 if [ $Respt = Crear ] ; then
 	echo "cree la lista de comandos" ; sleep 3
 	nano "ListadeComandos"
-	dir="/home/josepas/ListadeComandos"
+	dir="ListadeComandos"
 else
 	echo "Especifique el documento"
 	read dir

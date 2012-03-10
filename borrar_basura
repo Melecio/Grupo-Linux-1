@@ -1,0 +1,50 @@
+#! /bin/bash
+
+dir() {
+   case $sala in
+	a) cd /home/invitado 
+	;;
+    e | f) cd /home/guest
+	;;
+        *) echo La sala no existe
+   	   exit 1
+	   ;;
+   esac
+}
+
+tamsala=${#2}
+
+if [ $tamsala -eq 1 ] ; then 
+	sala=$2
+	dir
+	shopt -s extglob
+
+	H=""
+	R=""
+	D=""
+	while getopts "dgr" flag	
+	do
+		case $flag in 
+			r) R="-r"
+                        ;;
+
+			d) D="!(*.desktop|.*)"
+			;;
+			g) H="!(.*|gacela|jml|codeblocks|Desktop|Descargas|Downloads|Documentos|workspace)"	
+			;;
+    	               \?) echo Opcion Invalida
+			   exit 1
+			;;
+		esac
+	done
+	dir
+	rm $R $H 2> /dev/null
+
+	cd Desktop
+	rm $R $D 2> /dev/null
+elif [ $tamsala -eq 0 ] ; then
+	echo Ingrese nombre de la sala
+else
+	echo Opcion invalida
+	exit 1
+fi

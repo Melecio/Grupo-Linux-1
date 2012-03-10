@@ -17,15 +17,24 @@ do
 done < ListaDePaginas
 rm ListaDePaginas
 
-# Aqui es donde consigo un problema,
-# como hacer las descargas simultaneas en las maquinas
-# se me ocurre mandarlos a background pero no consigo
-# la forma de que me avisen cuando terminen la descarga
+# Bueno ya logro que lo haga en background pero necesito ayuda para hacer que 
+# use la salida del ping pro para el revisar si esta encendida
 while [ $i < $NumeroDePartes ]
 do
     if consigue COMPUTADORA CONECTADA (log pingpro)
     then
-	ssh COMPUTADORA CONECTADA 'wget Pagina[1]'
+
+	# No estoy seguro si esta bien usado el comando screen asi por favor revisenlo
+	# Ademas no se si el se va a detener hasta que termine el la descarga o va a seguir con la iteracion
+	# Por que lo ideal es que lo haga y siga con la iteracion hasta que consiga las N maquinas que esten
+	# encendidas. 
+	# En general la idea es que si son N paginas, el abra N terminales con screen 
+	# (que trabajen en paralelo) y que ellas hagan el resto.
+	# Otra cosa es que no se si yo declarando las variables aqui (tales como la variable $password
+	# me la vaya a seguir guardando una vez que use screen
+	
+	screen -S $i -X stuff 'sshpass -p $password ssh COMPUTADORA CONECTADA 'wget -b --output-document= '"$i"' Pagina[$i]; exit' 
+	sshpass -p $password scp COMPUTADORA CONECTADA:~/'"$i"' . ^M'
 	$i=$(($i+1))
     fi
 done

@@ -37,6 +37,9 @@ fi
 #	fi
 #done 
 
+set -o xtrace
+set -o verbose
+
 case $1 in
 	a | e | f | et)
 		for i in $(seq 1 $fin) ; do

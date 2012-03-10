@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# While que da la opción de configurar manualmente la red
+while getopts :i OPT; do
+    case $OPT in
+        i|+i)
+            manual=1
+            ;;
+        *)
+            echo "usage: ${0##*/} [+-i} [--] ARGS..."
+            exit 2
+    esac
+done
+shift $(( OPTIND - 1 ))
+OPTIND=1
+
+# Funcion para instalar paquetes en arch
+function instalar() {
+    for i in $(seq 1 $#); do
+        eval pacman -S --noconfirm  \${$i}
+    done
+}
+
+# Funcion para apagar cualquier módulo
+function apagarModulo() {
+    rmmod $1 2>/dev/null
+}
+
+# Se configura la red por dchp 
+# A este comando se le pasa la interfaz que desea configurarse
+# por ejemplo "eth0"
+function redPorDchp() {
+    ifconfig $1 up
+    dhcpcd $1
+}
+
+# Se configura la red manualmente pasando ip, gateway y dns pasando como argumento 
+# interfaz a usar
+function redManual() {
+    echo "Ingrese el ip deseado"
+    read ip
+    ifconfig $1 $ip
+    echo "Ingrese la puerta de enlace"
+    read gateway
+    route add default gw $gateway $1
+    echo "Ingrese el search y el dns con un espacio de por medio:"
+    read srch dns
+    echo $srch >> /etc/resolv.conf
+    echo "nameserver " $dns >> /etc/resolv.conf
+}
+    
+# Monta particiones en /tmp para examinarlas
+# y luego las desmonta
+function montarParticiones() {
+    lista=$(sfdisk -d | awk '/dev/{print $1}' | grep /dev/)
+    mkdir /tmp/dev
+    for i in $lista; do
+        eval mkdir /tmp\$i 2>/dev/null
+        mount $i /tmp/$i
+        echo "El contenido en " $i " es: "
+        eval ls /tmp\$i 2>/dev/null
+        echo -e "\n"
+        umount $i /tmp/\$i 2>/dev/null
+    done
+}
+
+# Da la opción de montar una o más particiones
+function seleccionarParticion() {
+    declare -i sigue=0
+    echo "¿Desea montar alguna partición? [y/n]"
+        
+    until [[ "$respuesta" == "y" || "$respuesta" == "n" ]]; do
+        echo "Ingrese y para sí y n para no"
+        read respuesta
+    done
+    if [ "$respuesta" == "y" ]; then
+        sigue=1
+    elif [ "$respuesta" == "n" ]; then
+        sigue=0
+    fi
+        
+    while [ "$sigue" == "1" ]; do
+        echo "¿Cuál partición desea montar?"
+        read particion
+        
+        echo "¿En dónde desea montarla?"
+        read lugar
+        if [ -a $lugar ]; then
+            $true
+        else
+            mkdir $lugar
+        fi
+        mount /dev/$particion $lugar 
+        
+        echo "¿Desea montar otra partición? [y/n]"
+        until [[ "$resp" == "y" || "$resp" == "n" ]]; do
+            echo "Intrese y para sí o n para no"
+            read resp
+        done
+        
+        if [ "$resp" == "y" ]; then
+            $true
+        elif [ "$resp" == "n" ]; then
+            break
+        fi
+     done
+
+ }
+
+
+
+if test $manual ; then
+    redManual "eth0"
+else
+    redPorDchp "eth0"
+fi
+
+# Se actualiza Arch
+pacman -Syy
+instalar "rsync" "openssh" "screen" "cowsay"
+rc.d restart sshd 
+apagarModulo "pcspkr"
+montarParticiones
+seleccionarParticion
+cowsay -f tux DEBIAN RULES

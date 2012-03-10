@@ -42,7 +42,7 @@ function obtener_rangos
     fi
 }
 
-dir=$PWD/DaemonLOG
+dir=~/DaemonLOG
 declare -a s
 declare -a start
 declare -a end

@@ -1,10 +1,13 @@
 #!/bin/bash
 
 # While que da la opción de configurar manualmente la red
-while getopts :i OPT; do
+while getopts :iu OPT; do
     case $OPT in
         i|+i)
             manual=1
+            ;;
+        u|+u)
+            noUpdate=1
             ;;
         *)
             echo "usage: ${0##*/} [+-i} [--] ARGS..."
@@ -108,15 +111,20 @@ function seleccionarParticion() {
  }
 
 
-
+# Se prueba si se configurará la red manualmente o por DCHP
 if test $manual ; then
     redManual "eth0"
 else
     redPorDchp "eth0"
 fi
 
-# Se actualiza Arch
-pacman -Syy
+# Se prueba si se hace update de la lista de pacman o no
+if test $noUpdate ; then
+    $true
+else
+    pacman -Syy   
+fi
+
 instalar "rsync" "openssh" "screen" "cowsay"
 rc.d restart sshd 
 apagarModulo "pcspkr"

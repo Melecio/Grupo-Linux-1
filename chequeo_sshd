@@ -1,0 +1,29 @@
+#! /bin/bash
+
+# Autor: Hancel Gonzalez
+# Archivo: chequeo_sshd -  Verificacion de sshd en cada una de las maquinas
+#                          de la sala recibida como argumento
+
+tam=${#1}
+
+if [ $tam -eq 1 ] ; then
+	case $1 in
+	  a | e | f)
+		for i in {1..24}
+		do
+			if ping -c 1 $1$i > /dev/null ; then
+			   ssh root@$1$i.ac.labf.usb.ve echo "sshd en $1$i fino"
+        	else
+	        	   echo "no es posible conectarse con la maquina $1$i"
+	 		fi
+		done
+	  ;;
+	 *) echo "La sala que ha ingresado no existe"
+            echo ./chequeo_sshd \[Nombre de la sala \{aef\}\]
+   	  ;;
+	esac
+elif [ $tam -eq 0 ] ; then
+	echo Introduzca el nombre la sala
+else
+	echo Nombre de sala muy largo
+fi

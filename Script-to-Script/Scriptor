@@ -1,7 +1,6 @@
 #! /bin/bash
-# Script que corre scripts  
+# Script que corre scripts
 
-# Obtiene las salas picando $salas con cut
 function obtener_salas
 {
     local _S="$1[*]"
@@ -13,6 +12,10 @@ function obtener_salas
 	s[2]="f"
 	s[3]="et"
     else
+	if [ ${#_S} -eq 1 ] || [ ${#_S} -eq 2 ] ; then
+	    s=($_S)
+	    return 1
+	fi
 	for i in {0..3}; do
 	    aux=$(echo $_S | cut -d":" -f$(($i+1)))
 	    if [ ${aux:-1} = 1 ] ; then 
@@ -22,22 +25,19 @@ function obtener_salas
 	    fi
 	done
     fi
-    if [ ${s[0]} = ${s[1]} ] ; then
-	for i in $(seq 1 3)
-	do
-	    unset s[$i]
-	done
-    fi
-    
 }
 
-# Obtiene los rangos picando $Rango con cut
 function obtener_rangos
 {
     local rango_="$1[*]"
     rango_=(${!rango_})
+    if [ ${#rango_} -le 5 ] ; then
+	start=(${rango_//:*})
+	end=(${rango_#*:})
+	return 1
+    fi
     if [ $rango_ ] ; then	
-	for i in {0..3}; do
+	for i in {0..3}; do	    echo
 	    r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
 	    if [ ${r:-1} = 1 ] ; then 
 		return 1
@@ -49,6 +49,43 @@ function obtener_rangos
 	start=1
 	end=24
     fi
+}
+
+function validar_rangos
+{
+    local min="$1"
+    min=(${!min})
+
+    local max="$2"
+    max=(${!max})
+
+    if [ $min -lt 1 ] || [ $max -gt 24 ] ; then
+	echo Verifique que los rangos introducidos sean validos
+	exit 1
+    fi
+
+    if [ $min -gt $max ] ; then
+	temp=$min
+	min=$max
+	max=$temp
+    fi
+
+    tmp=($min $max)
+
+    return $tmp
+}
+
+function validar_salas
+{
+    local _S="$1[*]"
+    _S=(${!_S})
+
+    for s_ in ${_S[*]} ; do
+	if [ $s_ != e ] && [ $s_ != a ] && [ $s_ != et ] && [ $s_ != f ]; then
+	    echo Alguna sala invalida
+	    exit 1
+	fi
+    done
 }
 
 # Declaracion de arreglos
@@ -67,9 +104,25 @@ done
 shift $(($OPTIND -1))
 
 obtener_salas "salas"
-declare -p s
+validar_salas "s"
 # Se llaman a las funciones y verifican los arreglos
 obtener_rangos "rangos"
+# Validacion de rangos
+old_long_start=${#start[@]}
+if [ ${#s[@]} -gt ${#start[@]} ] ;  then
+    for j in $(seq ${#start[@]} $((${#s[@]}-1))) ;  do
+	start[$j]=1
+	end[$j]=24
+    done
+fi
+for i in $(seq 0 $(($old_long_start-1))) ; do
+    validar_rangos "start[$i]" "end[$i]"
+    tmp=$?
+    start[$i]=${tmp[0]}
+    end[$i]=${tmp[1]}
+done
+
+declare -p s
 declare -p start
 declare -p end
 
@@ -77,15 +130,14 @@ declare -i fk=0
 # Itera por todas las computadoras desaeadas,
 # llevando primero el script con scp, dandole permiso
 # se corre y luego se borra para no dejar rastro
+file=${1##/*/}
 for sala in ${s[*]}
 do    
     for i in $(seq ${start[$fk]} ${end[$fk]}) 
     do
 	if ping -c 1 $sala$i.ac.labf.usb.ve 2>>/dev/null >>/dev/null ; then 
-	    
 	    scp $1 root@$sala$i.ac.labf.usb.ve:./
-	    ssh root@$sala$i.ac.labf.usb.ve "chmod +x /root/$1 ; /root/$1 ; rm -rf /root/$1 ; exit" 
-	    
+	    ssh root@$sala$i.ac.labf.usb.ve "chmod +x /root/$file ; /root/$file ; rm -rf /root/$file ; exit" 
 	else
 	    echo "$sala$i esta apagada"
 	fi

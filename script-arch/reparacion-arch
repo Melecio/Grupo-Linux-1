@@ -3,7 +3,7 @@
 #
 # ARCHIVO: reparacion-arch.sh
 #
-# USO: stale-links.sh [-u] [-i]
+# USO: reparacion-arch [-u] [-i]
 #
 # DESCRICIÓN: Este script es usado en casos en los que se necesita reparar una 
 #             máquina usando el live CD de Arch Linux. Configura la red, apaga el 

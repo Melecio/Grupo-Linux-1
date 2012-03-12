@@ -99,7 +99,7 @@ function redManual() {
 #              ventivamente en /temp.
 #==============================================================================
 function montarParticiones() {
-    lista=$(sfdisk -d | awk '/dev/{print $1}' | grep /dev/)
+    lista=$(sfdisk -d 2>/dev/null | awk '/dev/{print $1}' | grep /dev/)
     mkdir /tmp/dev
     for i in $lista; do
         eval mkdir /tmp\$i 2>/dev/null
@@ -146,7 +146,7 @@ function seleccionarParticion() {
         
         echo "¿Desea montar otra partición? [y/n]"
         until [[ "$resp" == "y" || "$resp" == "n" ]]; do
-            echo "Intrese y para sí o n para no"
+            echo "Ingrese y para sí o n para no"
             read resp
         done
         

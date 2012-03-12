@@ -1,0 +1,127 @@
+#! /bin/bash
+
+function obtener_salas
+{
+    local _S="$1"
+    _S=(${!_S})
+    
+    declare -a s=()
+
+    if [ ${_S:-1} -eq 1 ] 2>>/dev/null ; then
+	s=(a e f et)
+    else
+	if [ ${#_S} -eq 1 ] || [ ${#_S} -eq 2 ] ; then
+	    s=($_S)
+	else
+	    for i in {0..3}; do
+		aux=$(echo $_S | cut -d":" -f$(($i+1)))
+		if [ ${aux:-1} = 1 ] ; then 
+		    break
+		else
+		    s[$i]=$aux
+		fi
+	    done
+	fi
+    fi
+
+    echo "${s[@]}"
+}
+
+function obtener_rangos_iniciales
+{
+    local rango_="$1"
+    rango_=(${!rango_})
+
+    declare -a ini
+
+    if [ ${#rango_} -le 5 ] && [ ${#rango_} -gt 0 ]; then
+	ini=(${rango_//:*})
+    else
+	if [ $rango_ ] ; then	
+	    for i in {0..3}; do	    echo
+		r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
+		if [ ${r:-1} = 1 ] ; then 
+		    break
+		fi
+		ini[$i]=$(echo $r | cut -d":" -f1)	
+	    done
+	else
+	    ini=(1)
+	fi
+    fi
+    echo "${ini[@]}"
+}
+
+function obtener_rangos_finales
+{
+    local rango_="$1"
+    rango_=(${!rango_})
+
+    declare -a fin
+
+    if [ ${#rango_} -le 5 ] && [ ${#rango_} -gt 0 ]; then
+	fin=(${rango_#*:})
+    else
+	if [ $rango_ ] ; then	
+	    for i in {0..3}; do	    echo
+		r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
+		if [ ${r:-1} = 1 ] ; then 
+		    break
+		fi
+		fin[$i]=$(echo $r | cut -d":" -f2)	
+	    done
+	else	 
+	    fin=(24)
+	fi
+    fi
+    echo "${fin[@]}"
+}
+
+
+function validar_rangos
+{
+    local min="$1"
+    min=(${!min})
+
+    local max="$2"
+    max=(${!max})
+
+    if [ $min -lt 1 ] || [ $max -gt 24 ] ; then
+	return 0
+    fi
+
+    return 1
+}
+
+function validar_salas
+{
+    local _S="$1[*]"
+    _S=(${!_S})
+
+    for s_ in ${_S[*]} ; do
+	if [ $s_ != e ] && [ $s_ != a ] && [ $s_ != et ] && [ $s_ != f ]; then
+	    return 0
+	fi
+    done
+    return 1
+}
+
+function validar_array_rangos
+{
+    local ini="$1[*]"
+    ini=(${!ini})
+
+    local fin="$2[*]"
+    fin=(${!fin})
+
+    local long=$((${#ini[@]}-1))
+
+    for i in $(seq 0 $long) ; do
+	validar_rangos "ini[$i]" "fin[$i]"
+	tmp=$?
+	if [ $tmp -eq 0 ] ; then
+	    return 0
+	fi
+    done
+    return 1
+}

@@ -1,5 +1,5 @@
-#! /bin/bash
-# Script de consulta del estado de maquinas
+#!/bin/bash
+# Script que elimina la basura de /home/invitado
 
 function obtener_salas
 {
@@ -88,51 +88,61 @@ function validar_salas
     done
 }
 
-while getopts ":s:r:" opcion
+# Declaracion de variables
+declare -a s
+declare -a start
+declare -a end
+R=""
+nodef="Desktop|Documents|Downloads|workspace"
+
+while getopts ":s:r:d" opcion
 do
     case $opcion in
-        s ) salas="$OPTARG" ;;
-        r ) rangos="$OPTARG" ;;
- 	\?) echo "[-s a:e:f:et] [-r inicio:final/inicial1:final1/inicial2:final2/inicial3:final3] " ; exit ;;
+        s) salas="$OPTARG" ;;
+        r) rangos="$OPTARG" ;;
+	d) R="-r" ;;
+ 	\?) echo "[-s a:e:f:et] [-r inicio:final/inicial1:final1/inicial2:final2/inicial3:final3] [-d]" ; exit ;;
     esac
 done
 shift $(($OPTIND -1))
 
-dir=$PWD/DaemonLOG
 obtener_salas "salas"
-validar_salas "s"
-
 obtener_rangos "rangos"
+declare -i ind=0
 
-# Validacion de rangos
-old_long_start=${#start[@]}
-if [ ${#s[@]} -gt ${#start[@]} ] ;  then
-    for j in $(seq ${#start[@]} $((${#s[@]}-1))) ;  do
-	start[$j]=1
-	end[$j]=24
-    done
-fi
-for i in $(seq 0 $(($old_long_start-1))) ; do
-    validar_rangos "start[$i]" "end[$i]"
-    tmp=$?
-    start[$i]=${tmp[0]}
-    end[$i]=${tmp[1]}
+for sala in ${s[*]} ; do
+	for i in $(seq ${start[$ind]} ${end[$ind]}) ; do
+		if ping -c 1 $sala$i.ac.labf.usb.ve 2>>/dev/null >>/dev/null ; then
+			ssh invitado@$sala$i.ac.labf.usb.ve '
+			shopt -s extglob
+			until [[ $resp = y  ||  $resp = n ]] ; do
+				echo "Desea eliminar TODOS los archivos/directorios? [y/n]"
+				read resp
+			done;
+
+			if [ $resp = "n" ]; then
+				echo "Especifique los archivos/directorios que NO desea borrar, separados por | y sin espacios: "
+				read arch
+				elim="!($arch|'"$nodef"')"
+				rm '"$R"' $elim
+			else
+				elim="!('"$nodef"')"
+				rm '"$R"' $elim
+			fi;
+			exit'
+		else 
+			echo "$sala$i no puede ser accedida"
+		fi
+	done
+	ind=$ind+1
 done
+	
 
-declare -p s
-declare -p start
-declare -p end
-declare -i fk=0
 
-for sala in ${s[*]}
-do    
-    for i in $(seq ${start[$fk]} ${end[$fk]}) 
-    do
-	boolean=$(eval echo \${$sala[$i]})
-	if [ $boolean -eq 1 ] ; then
-	    echo "$sala$i is (off)"
-        else
-            echo "$sala$i is (on)"
-    done				     			
-    fk=$fk+1
-done
+
+
+
+
+
+
+

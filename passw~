@@ -38,6 +38,18 @@ fi
 #done 
 
 case $1 in
+<<<<<<< HEAD
+	a | e | f | et)
+		for i in $(seq 1 $fin) ; do
+			if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
+				
+				ssh root@$1$i.ac.labf.usb.ve 'set -o xtrace; set -o verbose; for j in $(seq 1 20) ; do yes yes | ssh-copy-id -i ~/.ssh/id_rsa.pub root@'"$1"'$j.ac.labf.usb.ve ; done; exit'
+			else
+				echo "$1$i no puede ser accedida"
+			fi
+		done;;
+	*) echo "Salas validas: a, e, f, et" ;;
+=======
     a | e | f | et)
 	for i in $(seq 1 $fin) ; do
 	    if ping -c 1 $1$i.ac.labf.usb.ve > /dev/null ; then
@@ -47,6 +59,7 @@ case $1 in
 	    fi
 	done;;
     *) echo "Salas validas: a, e, f, et" ;;
+>>>>>>> fd6f1f21a1ee29b80c9794a61a4aab48f60ce842
 esac
 
 

@@ -51,6 +51,9 @@ function obtener_rangos
     fi
 }
 
+<<<<<<< HEAD
+dir=$PWD/DaemonLOG
+=======
 function validar_rangos
 {
     local min="$1"
@@ -88,6 +91,12 @@ function validar_salas
     done
 }
 
+dir=~/DaemonLOG
+>>>>>>> fd6f1f21a1ee29b80c9794a61a4aab48f60ce842
+declare -a s
+declare -a start
+declare -a end
+
 while getopts ":s:r:" opcion
 do
     case $opcion in
@@ -98,12 +107,10 @@ do
 done
 shift $(($OPTIND -1))
 
-dir=$PWD/DaemonLOG
 obtener_salas "salas"
 validar_salas "s"
 
 obtener_rangos "rangos"
-
 # Validacion de rangos
 old_long_start=${#start[@]}
 if [ ${#s[@]} -gt ${#start[@]} ] ;  then
@@ -122,17 +129,20 @@ done
 declare -p s
 declare -p start
 declare -p end
-declare -i fk=0
+<<<<<<< HEAD
+=======
 
+declare -i fk=0
 for sala in ${s[*]}
 do    
     for i in $(seq ${start[$fk]} ${end[$fk]}) 
     do
 	boolean=$(eval echo \${$sala[$i]})
 	if [ $boolean -eq 1 ] ; then
-	    echo "$sala$i is (off)"
+	    echo "$sala$i is (off)
         else
             echo "$sala$i is (on)"
     done				     			
     fk=$fk+1
-done
+done					     
+>>>>>>> 26769cb4430b148a8fa7b8c2305c9fcb2cf95a47

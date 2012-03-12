@@ -12,7 +12,11 @@ done
 if [ $Respt = Crear ] ; then
 	echo "cree la lista de comandos" ; sleep 3
 	nano "ListadeComandos"
+<<<<<<< HEAD
+	dir="ListadeComandos"
+=======
 	dir=$PWD"/ListadeComandos"
+>>>>>>> eee6ed9bdb9c54a1bd4e0c1a2580a8136dd23447
 else
 	echo "Especifique el documento"
 	read dir

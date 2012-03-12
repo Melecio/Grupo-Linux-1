@@ -8,10 +8,10 @@
 # DESCRICIÓN: Este script es usado en casos en los que se necesita reparar una 
 #             máquina usando el live CD de Arch Linux. Configura la red, apaga el 
 #             molesto módulo PCSPKR y te permite revisar qué tiene cada partición y 
-#             luego montarlas que se quieran.
+#             luego montar las que se quieran.
 #
 # REQUERIMIENTOS: Una máquina con unidad de CD y un live CD de Arch Linux
-# NOTAS: Faltaría agregar opciones apra el mount --bind y mejorar el flujo de updates
+# NOTAS: Faltaría agregar opciones para el mount --bind y mejorar el flujo de updates
 # AUTORES: MP
 # COMPAÑÍA: Grupo Linux 1 - USB
 # VERSION: 1.0
@@ -41,8 +41,8 @@ OPTIND=1
 
 
 #=== FUNCIÓN ==================================================================
-# NOMBRE: instalar
-# DESCRIPCIÓN: Instala paquetes cuyos nombres se pasen como argumento
+# NOMBRE: Instalar
+# DESCRIPCIÓN: Instala paquetes cuyos nombres se pasen como argumento.
 #==============================================================================
 function instalar() {
     for i in $(seq 1 $#); do
@@ -51,8 +51,8 @@ function instalar() {
 }
 
 #=== FUNCIÓN ==================================================================
-# NOMBRE: Apagra Módulo
-# DESCRIPCIÓN: Elimina los módulos que se pasen como argumento.
+# NOMBRE: Apagar Módulo
+# DESCRIPCIÓN: Elimina los módulos cuyos nombres se pasen como argumento.
 #==============================================================================
 function apagarModulo() {
     rmmod $1 2>/dev/null
@@ -61,7 +61,7 @@ function apagarModulo() {
 
 
 #=== FUNCIÓN ==================================================================
-# NOMBRE: Red por dchp
+# NOMBRE: Red Por DHPC
 # DESCRIPCIÓN: Configura los parametros de la red usando dhcpcd usando como ar-
 #              gumento la interfaz que se desea configurar.
 #==============================================================================
@@ -72,7 +72,7 @@ function redPorDchp() {
 
 
 #=== FUNCIÓN ==================================================================
-# NOMBRE: Red manual
+# NOMBRE: Red Manual
 # DESCRIPCIÓN: Permite la configuración de la red de manera manual, útil para
 #              casos en los que no se tenga un servidor DHCP. Se pasan como ar-
 #              gumento la interfaz que se quiera configurar y la función le pi-
@@ -85,9 +85,11 @@ function redManual() {
     echo "Ingrese la puerta de enlace"
     read gateway
     route add default gw $gateway $1
-    echo "Ingrese el search y el dns con un espacio de por medio:"
-    read srch dns
+    echo "Ingrese el search:"
+    read srch
     echo $srch >> /etc/resolv.conf
+    echo "Ingrese la dirección del servidor DNS:"
+    read dns
     echo "nameserver " $dns >> /etc/resolv.conf
 }
     
@@ -112,13 +114,13 @@ function montarParticiones() {
 #=== FUNCIÓN ==================================================================
 # NOMBRE: Montar Particiones
 # DESCRIPCIÓN: Permite montar las particiones una vez que se conocen las ubica-
-#              ciones e /dev/*, además, permite montar las particiones deseadas
+#              ciones en /dev/*, además, permite montar las particiones deseadas
 #              en ubicaciones específicas.
 #==============================================================================
 function seleccionarParticion() {
     declare -i sigue=0
     echo "¿Desea montar alguna partición? [y/n]"
-        
+    
     until [[ "$respuesta" == "y" || "$respuesta" == "n" ]]; do
         echo "Ingrese y para sí y n para no"
         read respuesta
@@ -177,7 +179,7 @@ else
 fi
 
 #---------------------------------------------------------------------------------
-# Estructura principal del programa
+# Estructura principal del programa.
 #---------------------------------------------------------------------------------
 instalar "rsync" "openssh" "screen" "cowsay"                 
 rc.d restart sshd 

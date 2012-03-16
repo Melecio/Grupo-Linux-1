@@ -1,92 +1,7 @@
 #! /bin/bash
+. ./Validaciones
+
 # Script de consulta del estado de maquinas
-
-function obtener_salas
-{
-    local _S="$1[*]"
-    _S=(${!_S})
-
-    if [ ${_S:-1} -eq 1 ] 2>>/dev/null ; then
-	s[0]="a"
-	s[1]="e"
-	s[2]="f"
-	s[3]="et"
-    else
-	if [ ${#_S} -eq 1 ] || [ ${#_S} -eq 2 ] ; then
-	    s=($_S)
-	    return 1
-	fi
-	for i in {0..3}; do
-	    aux=$(echo $_S | cut -d":" -f$(($i+1)))
-	    if [ ${aux:-1} = 1 ] ; then 
-		return 1
-	    else
-		s[$i]=$aux
-	    fi
-	done
-    fi
-}
-
-function obtener_rangos
-{
-    local rango_="$1[*]"
-    rango_=(${!rango_})
-    if [ ${#rango_} -le 5 ] ; then
-	start=(${rango_//:*})
-	end=(${rango_#*:})
-	return 1
-    fi
-    if [ $rango_ ] ; then	
-	for i in {0..3}; do	    echo
-	    r=$(echo $rango_ | cut -d"/" -f$(($i+1)))
-	    if [ ${r:-1} = 1 ] ; then 
-		return 1
-	    fi
-	    start[$i]=$(echo $r | cut -d":" -f1)	
-	    end[$i]=$(echo $r | cut -d":" -f2)
-	done
-    else	 
-	start=1
-	end=24
-    fi
-}
-
-function validar_rangos
-{
-    local min="$1"
-    min=(${!min})
-
-    local max="$2"
-    max=(${!max})
-
-    if [ $min -lt 1 ] || [ $max -gt 24 ] ; then
-	echo Verifique que los rangos introducidos sean validos
-	exit 1
-    fi
-
-    if [ $min -gt $max ] ; then
-	temp=$min
-	min=$max
-	max=$temp
-    fi
-
-    tmp=($min $max)
-
-    return $tmp
-}
-
-function validar_salas
-{
-    local _S="$1[*]"
-    _S=(${!_S})
-
-    for s_ in ${_S[*]} ; do
-	if [ $s_ != e ] && [ $s_ != a ] && [ $s_ != et ] && [ $s_ != f ]; then
-	    echo Alguna sala invalida
-	    exit 1
-	fi
-    done
-}
 
 while getopts ":s:r:" opcion
 do
@@ -98,11 +13,18 @@ do
 done
 shift $(($OPTIND -1))
 
-dir=$PWD/DaemonLOG
-obtener_salas "salas"
-validar_salas "s"
+declare -a sala
+declare -a start
+declare -a end
 
-obtener_rangos "rangos"
+sala=(`obtener_salas "salas"`)
+declare -p sala
+start=(`obtener_rangos_iniciales "rangos"`)
+declare -p start
+end=(`obtener_rangos_finales "rangos"`)
+declare -p end
+validar_array_rangos "start" "end"
+echo $?
 
 # Validacion de rangos
 old_long_start=${#start[@]}
@@ -119,20 +41,19 @@ for i in $(seq 0 $(($old_long_start-1))) ; do
     end[$i]=${tmp[1]}
 done
 
-declare -p s
-declare -p start
-declare -p end
+validar_salas "sala"
+echo $?
+
 declare -i fk=0
 
-for sala in ${s[*]}
-do    
-    for i in $(seq ${start[$fk]} ${end[$fk]}) 
-    do
+for sala in ${sala[*]} ; do    
+    for i in $(seq ${start[$fk]} ${end[$fk]}) ; do
 	boolean=$(eval echo \${$sala[$i]})
 	if [ $boolean -eq 1 ] ; then
 	    echo "$sala$i is (off)"
         else
             echo "$sala$i is (on)"
+	fi
     done				     			
     fk=$fk+1
 done

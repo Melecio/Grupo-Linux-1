@@ -1,6 +1,28 @@
 #!/bin/bash
+#===================================================================================
+#
+# ARCHIVO: reparacion-arch.sh
+#
+# USO: reparacion-arch [-u] [-i]
+#
+# DESCRICIÓN: Este script es usado en casos en los que se necesita reparar una 
+#             máquina usando el live CD de Arch Linux. Configura la red, apaga el 
+#             molesto módulo PCSPKR y te permite revisar qué tiene cada partición y 
+#             luego montar las que se quieran.
+#
+# REQUERIMIENTOS: Una máquina con unidad de CD y un live CD de Arch Linux
+# NOTAS: Faltaría agregar opciones para el mount --bind y mejorar el flujo de updates
+# AUTORES: MP
+# COMPAÑÍA: Grupo Linux 1 - USB
+# VERSION: 1.0
+# CREADO: 8.3.2012 - 2:35 AM
+# REVISION: 12.03.2012
+#==================================================================================
 
-# While que da la opción de configurar manualmente la red
+
+#---------------------------------------------------------------------------------
+# Opciones del script, i para configurar manualmente el ip y u para no updates
+#---------------------------------------------------------------------------------
 while getopts :iu OPT; do
     case $OPT in
         i|+i)
@@ -17,28 +39,45 @@ done
 shift $(( OPTIND - 1 ))
 OPTIND=1
 
-# Funcion para instalar paquetes en arch
+
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Instalar
+# DESCRIPCIÓN: Instala paquetes cuyos nombres se pasen como argumento.
+#==============================================================================
 function instalar() {
     for i in $(seq 1 $#); do
         eval pacman -S --noconfirm  \${$i}
     done
 }
 
-# Funcion para apagar cualquier módulo
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Apagar Módulo
+# DESCRIPCIÓN: Elimina los módulos cuyos nombres se pasen como argumento.
+#==============================================================================
 function apagarModulo() {
     rmmod $1 2>/dev/null
 }
 
-# Se configura la red por dchp 
-# A este comando se le pasa la interfaz que desea configurarse
-# por ejemplo "eth0"
+
+
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Red Por DHPC
+# DESCRIPCIÓN: Configura los parametros de la red usando dhcpcd usando como ar-
+#              gumento la interfaz que se desea configurar.
+#==============================================================================
 function redPorDchp() {
     ifconfig $1 up
     dhcpcd $1
 }
 
-# Se configura la red manualmente pasando ip, gateway y dns pasando como argumento 
-# interfaz a usar
+
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Red Manual
+# DESCRIPCIÓN: Permite la configuración de la red de manera manual, útil para
+#              casos en los que no se tenga un servidor DHCP. Se pasan como ar-
+#              gumento la interfaz que se quiera configurar y la función le pi-
+#              al usuario el ip, la gateway, el search y el DNS.
+#==============================================================================
 function redManual() {
     echo "Ingrese el ip deseado"
     read ip
@@ -46,16 +85,21 @@ function redManual() {
     echo "Ingrese la puerta de enlace"
     read gateway
     route add default gw $gateway $1
-    echo "Ingrese el search y el dns con un espacio de por medio:"
-    read srch dns
+    echo "Ingrese el search:"
+    read srch
     echo $srch >> /etc/resolv.conf
+    echo "Ingrese la dirección del servidor DNS:"
+    read dns
     echo "nameserver " $dns >> /etc/resolv.conf
 }
     
-# Monta particiones en /tmp para examinarlas
-# y luego las desmonta
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Montar Particiones
+# DESCRIPCIÓN: Hace una lista del contenido de las particiones montándolas pre-
+#              ventivamente en /temp.
+#==============================================================================
 function montarParticiones() {
-    lista=$(sfdisk -d | awk '/dev/{print $1}' | grep /dev/)
+    lista=$(sfdisk -d 2>/dev/null | awk '/dev/{print $1}' | grep /dev/)
     mkdir /tmp/dev
     for i in $lista; do
         eval mkdir /tmp\$i 2>/dev/null
@@ -67,11 +111,16 @@ function montarParticiones() {
     done
 }
 
-# Da la opción de montar una o más particiones
+#=== FUNCIÓN ==================================================================
+# NOMBRE: Montar Particiones
+# DESCRIPCIÓN: Permite montar las particiones una vez que se conocen las ubica-
+#              ciones en /dev/*, además, permite montar las particiones deseadas
+#              en ubicaciones específicas.
+#==============================================================================
 function seleccionarParticion() {
     declare -i sigue=0
     echo "¿Desea montar alguna partición? [y/n]"
-        
+    
     until [[ "$respuesta" == "y" || "$respuesta" == "n" ]]; do
         echo "Ingrese y para sí y n para no"
         read respuesta
@@ -82,7 +131,7 @@ function seleccionarParticion() {
         sigue=0
     fi
         
-    while [ "$sigue" == "1" ]; do
+    while [ "$sigue" == "1" ]; do 
         echo "¿Cuál partición desea montar?"
         read particion
         
@@ -97,7 +146,7 @@ function seleccionarParticion() {
         
         echo "¿Desea montar otra partición? [y/n]"
         until [[ "$resp" == "y" || "$resp" == "n" ]]; do
-            echo "Intrese y para sí o n para no"
+            echo "Ingrese y para sí o n para no"
             read resp
         done
         
@@ -111,23 +160,30 @@ function seleccionarParticion() {
  }
 
 
-# Se prueba si se configurará la red manualmente o por DCHP
+#---------------------------------------------------------------------------------
+# Se comprueba si se configurará la red manual o por DHCP.
+#---------------------------------------------------------------------------------
 if test $manual ; then
     redManual "eth0"
 else
     redPorDchp "eth0"
 fi
 
-# Se prueba si se hace update de la lista de pacman o no
+#---------------------------------------------------------------------------------
+# Se comprueba si actualizará el Arch Linux.
+#---------------------------------------------------------------------------------
 if test $noUpdate ; then
     $true
 else
     pacman -Syy   
 fi
 
-instalar "rsync" "openssh" "screen" "cowsay"
+#---------------------------------------------------------------------------------
+# Estructura principal del programa.
+#---------------------------------------------------------------------------------
+instalar "rsync" "openssh" "screen" "cowsay"                 
 rc.d restart sshd 
 apagarModulo "pcspkr"
 montarParticiones
 seleccionarParticion
-cowsay -f tux DEBIAN RULES
+cowsay -f tux DEBIAN RULES                             # jeje
